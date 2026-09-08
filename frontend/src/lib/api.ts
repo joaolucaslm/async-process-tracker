@@ -11,7 +11,7 @@ import {
 import { z } from "zod";
 
 const BASE_URL = (
-  import.meta.env.VITE_API_URL ?? "http://localhost:8000"
+  import.meta.env.VITE_API_URL ?? "https://async-process-tracker.duckdns.org/"
 ).replace(/\/$/, "");
 
 export class ApiError extends Error {

@@ -7,7 +7,7 @@ it in the background: status, progress bar, live logs and the final result.
 
 - Node 20+
 - The backend running (see [`../backend/README.md`](../backend/README.md)).
-  Expected at `http://localhost:8000` by default.
+  Expected at `https://async-process-tracker.duckdns.org/` by default.
 
 ## Setup
 
@@ -21,7 +21,7 @@ npm run dev            # http://localhost:5173
 ## Running it with Docker
 
 ```bash
-docker build --build-arg VITE_API_URL=http://localhost:8000 -t async-tracker-frontend .
+docker build --build-arg VITE_API_URL=https://async-process-tracker.duckdns.org/ -t async-tracker-frontend .
 docker run -p 8080:80 async-tracker-frontend        # http://localhost:8080
 ```
 
@@ -44,7 +44,7 @@ backend from the repo root: `docker compose up --build`.
 
 | Variable       | Default                 | Description              |
 | -------------- | ----------------------- | ----------------------- |
-| `VITE_API_URL` | `http://localhost:8000` | Base URL of the backend |
+| `VITE_API_URL` | `https://async-process-tracker.duckdns.org/` | Base URL of the backend |
 
 ## How the code is organised
 

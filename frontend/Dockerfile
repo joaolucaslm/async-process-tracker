@@ -10,7 +10,7 @@ COPY . .
 
 # VITE_API_URL is baked into the bundle at build time. It must point at wherever
 # the browser reaches the backend, not at the compose service name.
-ARG VITE_API_URL=http://localhost:8000
+ARG VITE_API_URL=https://async-process-tracker.duckdns.org/
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
