@@ -1,76 +1,135 @@
 # PLANNING.md
 
-## 1. Entendimento do problema
+## 1. Understanding the problem
 
-O objetivo é construir uma aplicação full stack que garanta o padrão de **processamento assíncrono com acompanhamento de progresso**: o usuário submete uma tarefa (soma de uma lista de números), a API responde imediatamente sem esperar o processamento terminar, o trabalho roda em background por etapas simuladas (com delays propositais), e o frontend acompanha esse progresso via polling até a conclusão.
+The goal is to build a full-stack application that implements the pattern of
+**asynchronous processing with progress tracking**: the user submits a task
+(summing a list of numbers), the API responds immediately without waiting for the
+processing to finish, the work runs in the background through simulated steps
+(with deliberate delays), and the frontend follows that progress via polling
+until completion.
 
-Então, a aplicação deve garantir os seguintes tópicos:
-- a API **nunca bloqueia** enquanto uma requisição está sendo processada em background;
-- o estado da requisição (status, progresso, logs, resultado) é atualizado de forma confiável e consultável a qualquer momento;
-- o frontend reflete esse estado em tempo real, sem intervenção manual do usuário além de abrir a tela de detalhe.
+The application must therefore guarantee the following:
 
-## 2. Stack e decisões técnicas
+- the API **never blocks** while a request is being processed in the background;
+- the request state (status, progress, logs, result) is updated reliably and can
+  be queried at any moment;
+- the frontend reflects that state in near real time, with no manual action from
+  the user beyond opening the detail screen.
 
-### Banco de dados
-Não será utilizado. O próprio enunciado especifica armazenamento em memória ("a list or dictionary in the running process is enough"), e a aplicação não tem requisito de persistência entre reinicializações. As requisições e seus estados (status, progresso, logs, resultado) ficarão armazenadas em um dicionário mantido em memória durante a execução do processo.
+## 2. Stack and technical decisions
+
+### Database
+
+None will be used. The brief itself specifies in-memory storage ("a list or
+dictionary in the running process is enough"), and the application has no
+requirement to persist across restarts. Requests and their state (status,
+progress, logs, result) live in a dictionary held in memory for the lifetime of
+the process.
 
 ### Backend — Python + FastAPI
-FastAPI foi escolhido por ser nativamente assíncrono e por oferecer `BackgroundTasks`, que se encaixa diretamente na necessidade central do desafio: aceitar a requisição e devolver resposta imediata, enquanto o processamento roda de forma independente sem bloquear o event loop da API.
 
-**Estrutura modular**, proporcional ao escopo do projeto (4 endpoints, sem persistência real):
+FastAPI was chosen because it is asynchronous by nature and provides
+`BackgroundTasks`, which maps directly onto the core need of the challenge:
+accept the request and return an immediate response while the processing runs
+independently without blocking the API's event loop.
+
+**Modular structure**, proportional to the scope of the project (4 endpoints, no
+real persistence):
 
 ```
 app/
-├── main.py              # instância do FastAPI, inclusão dos routers
+├── main.py              # FastAPI instance, router registration
 ├── routers/
-│   └── requests.py      # os 4 endpoints (POST, GET lista, GET detalhe, POST cancel)
+│   └── requests.py      # the 4 endpoints (POST, GET list, GET detail, POST cancel)
 ├── schemas/
-│   └── request.py       # modelos Pydantic (RequestCreate, RequestOut, StatusEnum)
+│   └── request.py       # Pydantic models (RequestCreate, RequestOut, StatusEnum)
 ├── services/
-│   └── processor.py     # rotina de background: validação, cálculo, atualização de estado
+│   └── processor.py     # background routine: validation, calculation, state updates
 └── storage/
-    └── memory_store.py  # abstração sobre o dicionário em memória (get/set/list)
+    └── memory_store.py  # abstraction over the in-memory dictionary (get/set/list)
 ```
 
-Optei por não adotar uma arquitetura em camadas mais elaborada (ex: clean architecture com use cases, interfaces de repositório, etc.), pois o escopo do projeto não justifica essa complexidade: não há troca prevista de framework ou de mecanismo de armazenamento, e uma divisão mais pesada tornaria o código mais difícil de navegar sem ganho real de manutenibilidade. A divisão em `routers` / `schemas` / `services` / `storage` já separa claramente as responsabilidades (entrada HTTP, validação/tipagem, lógica de processamento, e acesso ao estado).
+I chose not to adopt a heavier layered architecture (e.g. clean architecture with
+use cases, repository interfaces, etc.), because the scope does not justify that
+complexity: there is no anticipated change of framework or storage mechanism, and
+a heavier split would make the code harder to navigate with no real gain in
+maintainability. The `routers` / `schemas` / `services` / `storage` split already
+separates the responsibilities clearly (HTTP input, validation/typing, processing
+logic, and state access).
 
-Validação e tipagem dos dados no backend serão feitas com **Pydantic**, incluindo o union type do campo `status` (`pending`, `processing`, `completed`, `error`).
+Data validation and typing on the backend are done with **Pydantic**, including
+the union type of the `status` field (`pending`, `processing`, `completed`,
+`error`).
 
-### Testes
-Serão escritos testes unitários tanto no backend quanto no frontend, priorizando os pontos mais sensíveis do desafio em vez de cobertura ampla:
-- **Backend**: criação de requisição, transições de status, não-bloqueio da API durante o processamento (uma requisição em `processing` não deve impedir outras chamadas de responder), e o fluxo de cancelamento.
-- **Frontend**: comportamento do polling (parar corretamente ao atingir `completed` ou `error`) e validação dos dados recebidos da API via Zod.
+### Tests
+
+Unit tests are written on both the backend and the frontend, prioritising the
+most sensitive points of the challenge rather than broad coverage:
+
+- **Backend**: request creation, status transitions, non-blocking behaviour of
+  the API during processing (a request in `processing` must not prevent other
+  calls from responding), and the cancellation flow.
+- **Frontend**: polling behaviour (stopping correctly when reaching `completed`
+  or `error`) and validation of the data received from the API via Zod.
 
 ### Frontend — React + TypeScript
-Frontend construído com **React + TypeScript**, sem uso de meta-frameworks (Next.js) — apenas React puro (via Vite), conforme especificado no enunciado ("Function components, useState, useEffect and basic typing are enough").
 
-Estilização com **TailwindCSS**, incluindo responsividade para uso mobile como diferencial (não exigido pelo enunciado, mas adicionado como boa prática).
+Frontend built with **React + TypeScript**, without meta-frameworks (Next.js) —
+plain React (via Vite), as stated in the brief ("Function components, useState,
+useEffect and basic typing are enough").
 
-**Zod** será utilizado para:
-- validar o formulário de criação de requisição antes do envio;
-- validar e tipar (via `z.infer`) os dados retornados pela API, garantindo segurança em tempo de execução além da checagem estática do TypeScript.
+Styling with **TailwindCSS**, including responsiveness for mobile use as a bonus
+(not required by the brief, but added as good practice).
 
-Telas:
-1. **Lista de requisições** — busca ao montar, com tratamento de loading, erro e vazio.
-2. **Nova requisição** — formulário para a lista de números, com submissão criando a requisição e navegando para o detalhe.
-3. **Detalhe da requisição** — status, progresso, logs e resultado, com polling em intervalo que para ao atingir `completed` ou `error`, e ação de cancelamento.
+**Zod** is used to:
 
-### Deploy
-- **Backend**: hospedado em uma instância EC2 (AWS Free Tier), rodando via Uvicorn atrás de um proxy reverso Nginx.
-- **Frontend**: hospedado na Vercel, apontando as chamadas de API para o endpoint da EC2.
+- validate the request creation form before submitting;
+- validate and type (via `z.infer`) the data returned by the API, providing
+  runtime safety on top of TypeScript's static checking.
 
-O deploy é tratado como um diferencial adicional. O projeto continuará sendo executável localmente de ponta a ponta apenas seguindo o README, conforme exigido no enunciado.
+Screens:
 
-## 3. Dificuldades esperadas
+1. **Request list** — fetched on mount, with loading, error and empty handling.
+2. **New request** — form for the list of numbers; submitting creates the request
+   and navigates to the detail screen.
+3. **Request detail** — status, progress, logs and result, with polling on an
+   interval that stops when reaching `completed` or `error`, plus a cancel
+   action.
 
-- **Garantir o não-bloqueio real da API**: `BackgroundTasks` do FastAPI roda no mesmo processo; é preciso confirmar que os `sleep`s do processamento não travam o event loop (uso de `asyncio.sleep` em vez de `time.sleep`, ou execução em thread separada se necessário).
-- **Consistência de estado em memória sob concorrência**: como múltiplas requisições podem estar sendo processadas simultaneamente, é necessário cuidado ao atualizar o dicionário compartilhado para evitar condições de corrida.
-- **Cancelamento de um processo em andamento**: interromper de forma limpa uma tarefa já disparada em background é mais delicado do que apenas mudar o status armazenado — é preciso garantir que a rotina de processamento verifique esse sinal de cancelamento durante sua execução.
-- **Sincronização entre polling do frontend e mudanças rápidas de estado no backend**: escolher um intervalo de polling que equilibre responsividade e número de requisições.
-- **CORS entre frontend (Vercel) e backend (EC2)** ao configurar o deploy.
+### Deployment
 
-## 4. Suposições assumidas
+- **Backend**: hosted on an EC2 instance (AWS Free Tier), running via Uvicorn
+  behind an Nginx reverse proxy.
+- **Frontend**: hosted on Vercel, pointing its API calls at the EC2 endpoint.
 
-- O status de cancelamento será modelado como um valor próprio (`cancelled`) adicional aos quatro especificados no enunciado, para diferenciar claramente de um erro real de processamento. *(ajustar aqui se decidir reaproveitar `error`)*
-- Não há necessidade de autenticação ou multiusuário; a aplicação assume um único usuário/sessão observando as requisições.
-- O deploy na AWS/Vercel é tratado como valor agregado, não como requisito de avaliação — o funcionamento local via README é a referência principal.
+Deployment is treated as an extra. The project remains runnable end to end
+locally just by following the README, as required by the brief.
+
+## 3. Expected difficulties
+
+- **Guaranteeing the API is genuinely non-blocking**: FastAPI's `BackgroundTasks`
+  runs in the same process; it must be confirmed that the processing `sleep`s do
+  not stall the event loop (using `asyncio.sleep` instead of `time.sleep`, or
+  running in a separate thread if needed).
+- **In-memory state consistency under concurrency**: since multiple requests can
+  be processed simultaneously, updating the shared dictionary needs care to avoid
+  race conditions.
+- **Cancelling a running process**: cleanly interrupting a task already dispatched
+  in the background is trickier than just changing the stored status — the
+  processing routine must check that cancellation signal during its execution.
+- **Synchronisation between the frontend polling and rapid backend state
+  changes**: choosing a polling interval that balances responsiveness against the
+  number of requests.
+- **CORS between frontend (Vercel) and backend (EC2)** when configuring the
+  deployment.
+
+## 4. Assumptions made
+
+- The cancellation status is modelled as its own value (`cancelled`), in addition
+  to the four specified in the brief, to clearly distinguish it from a real
+  processing error. *(revisit here if we decide to reuse `error`)*
+- No authentication or multi-user support is needed; the application assumes a
+  single user/session observing the requests.
+- The AWS/Vercel deployment is treated as added value, not an evaluation
+  requirement — local operation via the README is the primary reference.
