@@ -6,22 +6,27 @@ it in the background: status, progress bar, live logs and the final result.
 ## Requirements
 
 - Node 20+
-- The backend running (see [`../backend/README.md`](../backend/README.md)).
-  Expected at `https://async-process-tracker.duckdns.org/` by default.
+- The backend running locally at `http://localhost:8000` (see
+  [`../backend/README.md`](../backend/README.md)). That is where `npm run dev`
+  points by default.
 
 ## Setup
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env   # adjust VITE_API_URL if the backend is elsewhere
-npm run dev            # http://localhost:5173
+npm run dev            # http://localhost:5173, talks to http://localhost:8000
 ```
+
+`npm run dev` reads `VITE_API_URL` from the committed `.env.development`
+(`http://localhost:8000`). To point it elsewhere, copy `.env.example` to
+`.env.local` and edit — `.env.local` overrides `.env.development` and is
+gitignored.
 
 ## Running it with Docker
 
 ```bash
-docker build --build-arg VITE_API_URL=https://async-process-tracker.duckdns.org/ -t async-tracker-frontend .
+docker build --build-arg VITE_API_URL=http://localhost:8000 -t async-tracker-frontend .
 docker run -p 8080:80 async-tracker-frontend        # http://localhost:8080
 ```
 
@@ -42,9 +47,9 @@ backend from the repo root: `docker compose up --build`.
 
 ## Configuration
 
-| Variable       | Default                 | Description              |
-| -------------- | ----------------------- | ----------------------- |
-| `VITE_API_URL` | `https://async-process-tracker.duckdns.org/` | Base URL of the backend |
+| Variable       | Default                                                         | Description              |
+| -------------- | -------------------------------------------------------------- | ----------------------- |
+| `VITE_API_URL` | `http://localhost:8000` in dev (`.env.development`); `https://async-process-tracker.duckdns.org/` otherwise (code fallback in `lib/api.ts`, or a Vercel env var) | Base URL of the backend |
 
 ## How the code is organised
 

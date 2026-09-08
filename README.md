@@ -8,6 +8,17 @@ result by polling.
 - **Backend** — FastAPI, in-memory state. See [`backend/README.md`](backend/README.md).
 - **Frontend** — React + TypeScript + Vite. See [`frontend/README.md`](frontend/README.md).
 
+## Live demo
+
+| Service  | URL                                              |
+| -------- | ------------------------------------------------ |
+| Frontend | <https://async-process-tracker.vercel.app/>      |
+| Backend  | <https://async-process-tracker.duckdns.org/>     |
+| API docs | <https://async-process-tracker.duckdns.org/docs> |
+
+The frontend is deployed on Vercel; the backend runs on an EC2 instance behind
+nginx. State is in memory, so a backend restart clears every request.
+
 ## Run everything with Docker Compose
 
 Requires Docker (with Compose v2).
