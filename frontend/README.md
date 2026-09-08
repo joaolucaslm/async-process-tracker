@@ -18,6 +18,17 @@ cp .env.example .env   # adjust VITE_API_URL if the backend is elsewhere
 npm run dev            # http://localhost:5173
 ```
 
+## Running it with Docker
+
+```bash
+docker build --build-arg VITE_API_URL=http://localhost:8000 -t async-tracker-frontend .
+docker run -p 8080:80 async-tracker-frontend        # http://localhost:8080
+```
+
+The build produces static files served by nginx. `VITE_API_URL` is baked in at
+build time, so pass it as a `--build-arg`. Or bring it up together with the
+backend from the repo root: `docker compose up --build`.
+
 ## Scripts
 
 | Command              | What it does                                  |

@@ -24,6 +24,16 @@ The API is then on <http://localhost:8000>, with interactive docs at
 Configuration is optional, copy `.env.example` to `.env` to change the
 allowed CORS origins or shorten the step delays.
 
+## Running it with Docker
+
+```bash
+docker build -t async-tracker-backend .
+docker run -p 8000:8000 async-tracker-backend
+```
+
+Or bring it up together with the frontend from the repo root: `docker compose up --build`.
+Configuration is passed as environment variables (`-e CORS_ORIGINS=...`, `-e VALIDATION_DELAY=...`).
+
 ## Running the tests
 
 ```bash

@@ -1,70 +1,40 @@
 # Async Process Tracker
 
-A small full-stack app that accepts a request immediately, does the work in the
-background, and lets the user watch it happen: submit a list of numbers, and
-watch the backend sum it through four deliberately slow steps while progress
-goes from 0 to 100 %, the logs fill in, and the final result appears.
+Full-stack demo of asynchronous processing with progress tracking: submit a list
+of numbers, the API accepts it immediately, a background routine sums it through
+deliberately slow steps, and the frontend follows status, progress, logs and the
+result by polling.
 
-- **Backend** — Python + FastAPI, in-memory storage, non-blocking background
-  processing. Details and design notes in [`backend/README.md`](backend/README.md).
-- **Frontend** — React + TypeScript + Vite, three screens, polling on the detail
-  screen. Details and design notes in [`frontend/README.md`](frontend/README.md).
-- **Planning** — how the problem was understood and the project structured,
-  written before coding, in [`PLANNING.md`](PLANNING.md).
+- **Backend** — FastAPI, in-memory state. See [`backend/README.md`](backend/README.md).
+- **Frontend** — React + TypeScript + Vite. See [`frontend/README.md`](frontend/README.md).
 
-## Running it locally
+## Run everything with Docker Compose
 
-Two terminals. Start the backend first.
-
-### 1. Backend — http://localhost:8000
-
-Requires Python 3.11+.
+Requires Docker (with Compose v2).
 
 ```bash
-cd backend
-
-python -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
-
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+docker compose up --build
 ```
 
-Interactive API docs at http://localhost:8000/docs.
+| Service  | URL                          |
+| -------- | ---------------------------- |
+| Frontend | <http://localhost:8080>      |
+| Backend  | <http://localhost:8000>      |
+| API docs | <http://localhost:8000/docs> |
 
-### 2. Frontend — http://localhost:5173
+Stop with `Ctrl+C`, then `docker compose down` to remove the containers.
 
-Requires Node 20+.
+### Notes
 
-```bash
-cd frontend
+- The frontend is built to static files and served by nginx. `VITE_API_URL` is
+  baked in at build time (default `http://localhost:8000`); override it via the
+  `frontend.build.args` in `docker-compose.yml` if the backend is published
+  elsewhere, then rebuild.
+- The backend's `CORS_ORIGINS` is set in `docker-compose.yml` to allow the
+  dockerised frontend origin plus the local Vite dev server.
+- State is in memory, so `docker compose down` (or a backend restart) clears all
+  requests.
 
-npm install
-cp .env.example .env              # only needed if the backend is not on :8000
+## Run the services directly
 
-npm run dev
-```
-
-Open http://localhost:5173, create a request, and watch it run.
-
-## Running the tests
-
-```bash
-# Backend
-cd backend
-pip install -r requirements-dev.txt
-pytest
-
-# Frontend
-cd frontend
-npm run test
-```
-
-## What to look at
-
-| Where | What it demonstrates |
-| ----- | -------------------- |
-| Submit a request, then in a second tab open the list or create another | the API keeps answering while a request processes — nothing blocks |
-| The detail screen | polling every 1.5 s, progress + logs updating live, polling stops at `completed` / `error` / `cancelled` |
-| **Cancel request** on a running request | the background work stops within milliseconds, not at the end of the current sleep; progress freezes where it was |
-| `backend/README.md` / `frontend/README.md` | the file/folder layout and why it is split that way |
+See each service's README for the local (non-Docker) workflow and the tests.
