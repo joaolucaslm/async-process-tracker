@@ -1,11 +1,54 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "DM Sans", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+
+  --color-ink: #0f172a;
+  --color-body: #475569;
+  --color-muted: #94a3b8;
+
+  --color-brand: #2563eb;
+  --color-brand-hover: #1d4ed8;
+  --color-brand-soft: #eff4ff;
+
+  --color-accent: #3eced8;
+  --color-accent-dark: #1db1bd;
+  --color-sky: #60a5fa;
+
+  --color-status-pending: #64748b;
+  --color-status-processing: #2563eb;
+  --color-status-completed: #16a34a;
+  --color-status-error: #dc2626;
+  --color-status-cancelled: #d97706;
+
+  --shadow-card: 0.4px 0.4px 2.6px -0.8px rgb(15 23 42 / 0.06),
+    1.4px 1.4px 9.7px -1.7px rgb(15 23 42 / 0.06),
+    6px 6px 42px -2.5px rgb(15 23 42 / 0.06);
+  --radius-card: 0.875rem;
+}
+
 html {
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
 body {
   margin: 0;
   min-height: 100svh;
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-body);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  color: var(--color-ink);
 }
